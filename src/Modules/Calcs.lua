@@ -199,10 +199,21 @@ function calcs.calcFullDPS(build, mode, override, specEnv)
 	local burningGroundSource = ""
 	local causticGroundSource = ""
 	
+	local accelerationTbl = {
+		nodeAlloc = true,
+		requirementsItems = true,
+		requirementsGems = true,
+		skills = true,
+		everything = true,
+	}
+	local hasProcessedSkill = false
 	for _, activeSkill in ipairs(fullEnv.player.activeSkillList) do
 		if activeSkill.socketGroup and activeSkill.socketGroup.includeInFullDPS then
 			local activeSkillCount, enabled = getActiveSkillCount(activeSkill)
 			if enabled then
+				if hasProcessedSkill then
+					fullEnv, _, _, _ = calcs.initEnv(build, mode, override, { cachedPlayerDB = cachedPlayerDB, cachedEnemyDB = cachedEnemyDB, cachedMinionDB = cachedMinionDB, env = fullEnv, accelerate = accelerationTbl })
+				end
 				fullEnv.player.mainSkill = activeSkill
 				calcs.perform(fullEnv, true)
 				usedEnv = fullEnv
@@ -323,15 +334,7 @@ function calcs.calcFullDPS(build, mode, override, specEnv)
 					fullDPS.cullingMulti = usedEnv.player.output.CullMultiplier
 				end
 
-				-- Re-Build env calculator for new run
-				local accelerationTbl = {
-					nodeAlloc = true,
-					requirementsItems = true,
-					requirementsGems = true,
-					skills = true,
-					everything = true,
-				}
-				fullEnv, _, _, _ = calcs.initEnv(build, mode, override, { cachedPlayerDB = cachedPlayerDB, cachedEnemyDB = cachedEnemyDB, cachedMinionDB = cachedMinionDB, env = fullEnv, accelerate = accelerationTbl })
+				hasProcessedSkill = true
 			end
 		end
 	end
